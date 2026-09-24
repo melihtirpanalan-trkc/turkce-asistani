@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Türkçe Asistanı | MEB Öğretmen Portalı</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- FontAwesome İkonlar -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    .active-tab { background-color: #1e3a8a !important; color: white !important; }
+    .toast-animate { transition: all 0.3s ease; }
+    @media print {
+      body * { visibility: hidden; }
+      #printableSheet, #printableSheet * { visibility: visible; }
+      #printableSheet { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
+  <!-- ==================== TOAST BİLDİRİMİ ==================== -->
+  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] opacity-0 toast-animate bg-slate-900 text-white text-xs font-semibold py-3 px-5 rounded-xl shadow-2xl flex items-center space-x-2 border border-slate-700">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toastMsg">İşlem başarılı</span>
+  </div>
+  <!-- ==================== ÜST BİLGİ ÇUBUĞU (HEADER) ==================== -->
+  <header class="bg-blue-900 text-white shadow sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span class="text-3xl">🇹🇷</span>
+        <div>
