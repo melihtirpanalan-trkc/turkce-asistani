@@ -4,35 +4,686 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Türkçe Asistanı | MEB Öğretmen Portalı</title>
-  
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client CDN -->
+  <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- FontAwesome İkonlar -->
+  <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     .active-tab { background-color: #1e3a8a !important; color: white !important; }
-    .toast-animate { transition: all 0.3s ease; }
     @media print {
       body * { visibility: hidden; }
-      #printableSheet, #printableSheet * { visibility: visible; }
-      #printableSheet { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
       .no-print { display: none !important; }
     }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased">
-  <!-- ==================== TOAST BİLDİRİMİ ==================== -->
-  <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] opacity-0 toast-animate bg-slate-900 text-white text-xs font-semibold py-3 px-5 rounded-xl shadow-2xl flex items-center space-x-2 border border-slate-700">
-    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
-    <span id="toastMsg">İşlem başarılı</span>
-  </div>
-  <!-- ==================== ÜST BİLGİ ÇUBUĞU (HEADER) ==================== -->
+
+  <!-- Üst Başlık (Header) -->
   <header class="bg-blue-900 text-white shadow sticky top-0 z-40 no-print">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center space-x-3">
         <span class="text-3xl">🇹🇷</span>
         <div>
+          <h1 class="text-lg font-bold">Türkçe Asistanı</h1>
+          <p class="text-[11px] text-blue-200">MEB Türkçe Dersi Öğretmen Portalı (5, 6, 7 ve 8. Sınıflar)</p>
+        </div>
+      </div>
+      <div id="connStatus" class="inline-flex items-center bg-blue-950 text-blue-200 px-3 py-1.5 rounded-full border border-blue-800 text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
+        <span>Bulut Aktif</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Gövde ve Menü -->
+  <div class="max-w-7xl mx-auto px-4 py-6 flex-1 flex flex-col md:flex-row gap-6 w-full no-print">
+    
+    <!-- Sol Menü -->
+    <aside class="w-full md:w-64 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 shrink-0 flex flex-col justify-between">
+      <nav class="space-y-1">
+        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-3">Modüller</div>
+        <button onclick="nav('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition active-tab">
+          <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+          <span>Genel Bakış</span>
+        </button>
+        <button onclick="nav('students')" id="nav-students" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+          <i class="fa-solid fa-users w-4 text-center"></i>
+          <span>Sınıflar & Öğrenciler</span>
+        </button>
+        <button onclick="nav('rubrics')" id="nav-rubrics" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+          <i class="fa-solid fa-microphone-lines w-4 text-center text-blue-600"></i>
+          <span>Dinleme & Konuşma Sınavı</span>
+        </button>
+        <button onclick="nav('homework')" id="nav-homework" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+          <i class="fa-solid fa-book-bookmark w-4 text-center text-emerald-600"></i>
+          <span>Kitap Okuma & Ödev</span>
+        </button>
+        <button onclick="nav('outcomes')" id="nav-outcomes" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+          <i class="fa-solid fa-bullseye w-4 text-center text-purple-600"></i>
+          <span>MEB Kazanım Rehberi</span>
+        </button>
+        <button onclick="nav('questions')" id="nav-questions" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+          <i class="fa-solid fa-file-pen w-4 text-center text-amber-600"></i>
+          <span>Soru Bankası</span>
+        </button>
+        <button onclick="nav('planner')" id="nav-planner" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+          <i class="fa-solid fa-wand-magic-sparkles w-4 text-center text-indigo-600"></i>
+          <span>Akıllı Soru & Plan Üretici</span>
+        </button>
+      </nav>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-500">
+        <p class="font-bold text-slate-700">Supabase Proje:</p>
+        <p class="font-mono text-[10px] text-slate-500 truncate">occliljfldmenjnswnjh</p>
+      </div>
+    </aside>
+
+    <!-- Ana Panel -->
+    <main class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-h-[550px]">
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="space-y-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">Hoş Geldiniz, Öğretmenim! 👋</h2>
+          <p class="text-xs text-slate-500 mt-1">2026-2027 Eğitim Öğretim Yılı Türkçe Dersi Sınıf ve Başarı Özeti</p>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+            <span class="text-blue-600 text-xs font-bold uppercase">Sınıflar</span>
+            <div id="statClasses" class="text-3xl font-extrabold text-blue-900 mt-1">3</div>
+            <p class="text-[11px] text-blue-500 mt-1">Aktif Şube</p>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+            <span class="text-emerald-600 text-xs font-bold uppercase">Öğrenciler</span>
+            <div id="statStudents" class="text-3xl font-extrabold text-emerald-900 mt-1">0</div>
+            <p id="statBEP" class="text-[11px] text-emerald-600 mt-1">0 BEP Öğrencisi</p>
+          </div>
+          <div class="bg-purple-50 border border-purple-100 rounded-2xl p-4">
+            <span class="text-purple-600 text-xs font-bold uppercase">Kazanımlar</span>
+            <div class="text-3xl font-extrabold text-purple-900 mt-1">10</div>
+            <p class="text-[11px] text-purple-600 mt-1">5-8. Sınıf MEB</p>
+          </div>
+          <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+            <span class="text-amber-600 text-xs font-bold uppercase">Sorular</span>
+            <div class="text-3xl font-extrabold text-amber-900 mt-1">4</div>
+            <p class="text-[11px] text-amber-600 mt-1">Soru Havuzu</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+          <div onclick="nav('rubrics')" class="p-4 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-blue-50 cursor-pointer transition">
+            <i class="fa-solid fa-microphone-lines text-2xl text-blue-600 mb-2"></i>
+            <h4 class="font-bold text-sm text-slate-800">Dinleme & Konuşma Sınavı</h4>
+            <p class="text-xs text-slate-500 mt-1">MEB ölçek kriterlerine göre puanlama ve resmi çıktı alma.</p>
+          </div>
+          <div onclick="nav('homework')" class="p-4 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-emerald-50 cursor-pointer transition">
+            <i class="fa-solid fa-book-bookmark text-2xl text-emerald-600 mb-2"></i>
+            <h4 class="font-bold text-sm text-slate-800">Kitap & Ödev Takibi</h4>
+            <p class="text-xs text-slate-500 mt-1">Aylık kitap okuma ve haftalık kontrol çizelgesi.</p>
+          </div>
+          <div onclick="nav('planner')" class="p-4 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-indigo-50 cursor-pointer transition">
+            <i class="fa-solid fa-wand-magic-sparkles text-2xl text-indigo-600 mb-2"></i>
+            <h4 class="font-bold text-sm text-slate-800">Akıllı Soru & Plan</h4>
+            <p class="text-xs text-slate-500 mt-1">Metinden MEB açık uçlu soru yönergeleri çıkarma.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ÖĞRENCİLER -->
+      <section id="tab-students" class="hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Sınıflar & Öğrenciler</h2>
+            <p class="text-xs text-slate-500">Kayıtlı öğrenciler, şubeler ve BEP takibi</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportCSV()" class="px-3 py-2 bg-slate-100 border text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200">
+              <i class="fa-solid fa-file-csv mr-1"></i> Excel İndir
+            </button>
+            <button onclick="openModal('classModal')" class="px-3 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-black">
+              + Sınıf Ekle
+            </button>
+            <button onclick="openModal('studentModal')" class="px-3 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700">
+              + Öğrenci Ekle
+            </button>
+          </div>
+        </div>
+
+        <div class="flex gap-3 items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <span class="text-xs font-semibold text-slate-600">Sınıf Seç:</span>
+          <select id="studentClassFilter" onchange="renderStudents()" class="text-xs border rounded-lg p-2 bg-white">
+            <option value="">Tüm Sınıflar</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b text-slate-500 font-bold uppercase">
+              <tr>
+                <th class="py-3 px-4">No</th>
+                <th class="py-3 px-4">Adı Soyadı</th>
+                <th class="py-3 px-4">Sınıf</th>
+                <th class="py-3 px-4">Cinsiyet</th>
+                <th class="py-3 px-4">BEP</th>
+                <th class="py-3 px-4">Özel Not</th>
+                <th class="py-3 px-4 text-right">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="studentTable" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: DİNLEME & KONUŞMA ÖLÇEKLERİ -->
+      <section id="tab-rubrics" class="hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Dinleme & Konuşma Sınav Ölçeği</h2>
+            <p class="text-xs text-slate-500">MEB 4 Temel Beceri Yönetmeliğine Uygun 100 Puanlık Değerlendirme</p>
+          </div>
+          <button onclick="printRubric()" class="px-3 py-2 bg-slate-100 border text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200 flex items-center gap-1.5">
+            <i class="fa-solid fa-print"></i> Resmi Ölçek Yazdır / PDF
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border">
+          <div>
+            <label class="block text-xs font-bold mb-1">Ölçek Türü</label>
+            <select id="rubricType" onchange="renderRubric()" class="w-full text-xs border rounded-lg p-2 bg-white">
+              <option value="konusma">MEB Konuşma Becerisi (5 Kriter)</option>
+              <option value="dinleme">MEB Dinleme/İzleme Becerisi (4 Kriter)</option>
+              <option value="katilim">Ders İçi Etkinlik Katılımı (5 Kriter)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1">Dönem</label>
+            <select id="rubricPeriod" class="w-full text-xs border rounded-lg p-2 bg-white">
+              <option>1. Dönem 1. Sınav</option>
+              <option>1. Dönem 2. Sınav</option>
+              <option>2. Dönem 1. Sınav</option>
+              <option>2. Dönem 2. Sınav</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1">Sınıf</label>
+            <select id="rubricClass" onchange="updateRubricStudents()" class="w-full text-xs border rounded-lg p-2 bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1">Öğrenci</label>
+            <select id="rubricStudent" onchange="renderRubric()" class="w-full text-xs border rounded-lg p-2 bg-white"></select>
+          </div>
+        </div>
+
+        <div class="border rounded-2xl p-5 bg-white space-y-4">
+          <div class="flex items-center justify-between border-b pb-3">
+            <div>
+              <h3 id="rubricHeader" class="font-bold text-slate-800 text-sm">Ölçek Kriterleri</h3>
+              <p id="rubricStudentName" class="text-xs text-blue-600 font-semibold mt-0.5">Lütfen öğrenci seçin</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-slate-400 block">Toplam:</span>
+              <span id="rubricTotal" class="text-2xl font-black text-blue-600">0 / 100</span>
+            </div>
+          </div>
+          <div id="rubricCriteria" class="space-y-3"></div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Öğretmen Gözlemi</label>
+            <input type="text" id="rubricNote" placeholder="Örn: Telaffuz ve jest kullanımı çok başarılıydı..." class="w-full text-xs border rounded-lg p-2.5">
+          </div>
+          <div class="flex justify-end pt-2">
+            <button onclick="saveRubric()" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700">
+              Notu Kaydet
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: ÖDEV TAKİBİ -->
+      <section id="tab-homework" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Kitap Okuma & Ödev Takip Çizelgesi</h2>
+          <p class="text-xs text-slate-500">Haftalık ödev kontrolü ve okunan kitap takibi</p>
+        </div>
+        <div class="flex gap-3 items-center bg-slate-50 p-3 rounded-xl border">
+          <span class="text-xs font-semibold">Sınıf:</span>
+          <select id="hwClassFilter" onchange="renderHomework()" class="text-xs border rounded-lg p-2 bg-white"></select>
+        </div>
+        <div class="overflow-x-auto border rounded-2xl">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b text-slate-500 font-bold uppercase">
+              <tr>
+                <th class="py-3 px-4">No</th>
+                <th class="py-3 px-4">Adı Soyadı</th>
+                <th class="py-3 px-4">Okunan Kitap</th>
+                <th class="py-3 px-4">Sayfa</th>
+                <th class="py-3 px-4">Durum</th>
+                <th class="py-3 px-4 text-right">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="hwTable" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 5: KAZANIMLAR -->
+      <section id="tab-outcomes" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">MEB Türkçe Kazanımları</h2>
+          <p class="text-xs text-slate-500">5, 6, 7 ve 8. sınıf kazanımları rehberi</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border">
+          <select id="outGrade" onchange="renderOutcomes()" class="text-xs border rounded-lg p-2 bg-white">
+            <option value="">Tüm Sınıflar (5-8)</option>
+            <option value="5">5. Sınıf</option>
+            <option value="6">6. Sınıf</option>
+            <option value="7">7. Sınıf</option>
+            <option value="8">8. Sınıf</option>
+          </select>
+          <select id="outArea" onchange="renderOutcomes()" class="text-xs border rounded-lg p-2 bg-white">
+            <option value="">Tüm Alanlar</option>
+            <option value="Okuma">Okuma</option>
+            <option value="Yazma">Yazma</option>
+            <option value="Konuşma">Konuşma</option>
+            <option value="Dinleme/İzleme">Dinleme/İzleme</option>
+            <option value="Dil Bilgisi">Dil Bilgisi</option>
+          </select>
+          <input type="text" id="outSearch" oninput="renderOutcomes()" placeholder="Kelimede ara..." class="text-xs border rounded-lg p-2">
+        </div>
+        <div id="outList" class="space-y-2"></div>
+      </section>
+
+      <!-- TAB 6: SORU BANKASI -->
+      <section id="tab-questions" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Türkçe Soru Bankası</h2>
+          <p class="text-xs text-slate-500">LGS ve Açık Uçlu Soru Havuzu</p>
+        </div>
+        <div id="qList" class="space-y-3"></div>
+      </section>
+
+      <!-- TAB 7: AKILLI ASİSTAN -->
+      <section id="tab-planner" class="hidden space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">💡 Akıllı Türkçe Öğretmen Asistanı</h2>
+          <p class="text-xs text-slate-500">Okuma metninden MEB açık uçlu soru taslakları üretimi</p>
+        </div>
+        <div class="border rounded-2xl p-5 bg-slate-50 space-y-3">
+          <label class="block text-xs font-bold">Paragraf / Okuma Metni Yapıştırın:</label>
+          <textarea id="aiText" rows="4" class="w-full text-xs border rounded-xl p-3 bg-white" placeholder="Metni buraya yapıştırın..."></textarea>
+          <div class="flex gap-2">
+            <button onclick="genQuestions()" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700">
+              📝 4 Açık Uçlu Soru Türet
+            </button>
+            <button onclick="genListening()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700">
+              🎙️ Dinleme Dersi Planı Hazırla
+            </button>
+          </div>
+        </div>
+        <div id="aiOut" class="hidden border rounded-2xl p-4 bg-blue-50 text-xs text-slate-700 space-y-2"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- YAZDIRMA ALANI -->
+  <div id="printArea" class="hidden p-8 bg-white text-black font-serif"></div>
+
+  <!-- MODALLAR -->
+  <div id="classModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-3">
+      <h3 class="font-bold text-sm">Yeni Sınıf Ekle</h3>
+      <select id="mClsLevel" class="w-full text-xs border rounded-lg p-2">
+        <option value="5">5. Sınıf</option><option value="6">6. Sınıf</option><option value="7">7. Sınıf</option><option value="8">8. Sınıf</option>
+      </select>
+      <input type="text" id="mClsSub" placeholder="Şube (Örn: A)" class="w-full text-xs border rounded-lg p-2 uppercase">
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('classModal')" class="px-3 py-1.5 border rounded-lg text-xs">Vazgeç</button>
+        <button onclick="saveClass()" class="px-4 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="studentModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-3">
+      <h3 class="font-bold text-sm">Yeni Öğrenci Ekle</h3>
+      <select id="mStuClass" class="w-full text-xs border rounded-lg p-2"></select>
+      <input type="number" id="mStuNo" placeholder="Okul No (Örn: 105)" class="w-full text-xs border rounded-lg p-2">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="text" id="mStuName" placeholder="Adı" class="text-xs border rounded-lg p-2">
+        <input type="text" id="mStuSurname" placeholder="Soyadı" class="text-xs border rounded-lg p-2 uppercase">
+      </div>
+      <div class="flex items-center gap-4">
+        <select id="mStuGender" class="text-xs border rounded-lg p-2"><option>Kız</option><option>Erkek</option></select>
+        <label class="text-xs font-semibold cursor-pointer"><input type="checkbox" id="mStuBEP" class="mr-1"> BEP Öğrencisi</label>
+      </div>
+      <input type="text" id="mStuNote" placeholder="Öğretmen Notu" class="w-full text-xs border rounded-lg p-2">
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('studentModal')" class="px-3 py-1.5 border rounded-lg text-xs">Vazgeç</button>
+        <button onclick="saveStudent()" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    const SUPABASE_URL = "https://occliljfldmenjnswnjh.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jY2xpbGpmbGRtZW5qbnN3bmpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNjQ3NjAsImV4cCI6MjEwNTg0MDc2MH0.AJ6aOUOO2Lwm4ic4Ip63uw8yQZEWYwcPvHAVHYwEAGA";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const RUBRICS = {
+      konusma: { title: "MEB Konuşma Becerisi Değerlendirme Ölçeği", crits: [{n: "Konuya uygunluk", m: 20}, {n: "Beden dili ve jest-mimik", m: 20}, {n: "Diksiyon ve telaffuz", m: 20}, {n: "Konuşma akıcılığı", m: 20}, {n: "Göz teması kurma", m: 20}] },
+      dinleme: { title: "MEB Dinleme/İzleme Becerisi Ölçeği", crits: [{n: "Ana fikri kavrama", m: 25}, {n: "Yardımcı fikirleri çıkarma", m: 25}, {n: "Olay ve şahıs kadrosunu belirleme", m: 25}, {n: "Neden-sonuç ilişkileri", m: 25}] },
+      katilim: { title: "Ders İçi Etkinliklere Katılım Ölçeği", crits: [{n: "Derse hazırlıklı gelme", m: 20}, {n: "Etkinliklere aktif katılım", m: 20}, {n: "Sorumluluk alma", m: 20}, {n: "Saygılı fikir beyanı", m: 20}, {n: "Ödev teslimi", m: 20}] }
+    };
+
+    const OUTCOMES = [
+      { seviye: 8, alan: "Okuma", kod: "T.8.3.5", tanim: "Bağlamdan yararlanarak bilmediği kelime ve kelime gruplarının anlamını tahmin eder." },
+      { seviye: 8, alan: "Okuma", kod: "T.8.3.9", tanim: "Fiilimsilerin cümledeki işlevlerini fark eder ve bunları amacına uygun kullanır." },
+      { seviye: 8, alan: "Okuma", kod: "T.8.3.16", tanim: "Metnin ana fikrini/ana duygusunu belirler." },
+      { seviye: 8, alan: "Okuma", kod: "T.8.3.18", tanim: "Metindeki yardımcı fikirleri belirler." },
+      { seviye: 8, alan: "Yazma", kod: "T.8.4.16", tanim: "Yazdıklarını zenginleştirmek için atasözleri, deyimler ve özdeyişler kullanır." },
+      { seviye: 8, alan: "Konuşma", kod: "T.8.2.1", tanim: "Hazırlıklı konuşma yapar (Beden dili, ses tonu, göz teması)." },
+      { seviye: 8, alan: "Dinleme/İzleme", kod: "T.8.1.2", tanim: "Dinlediklerinde geçen olayların gelişimini ve sonucunu tahmin eder." },
+      { seviye: 7, alan: "Okuma", kod: "T.7.3.14", tanim: "Metinle ilgili soruları cevaplar ve metinden çıkarımlar yapar." },
+      { seviye: 6, alan: "Dil Bilgisi", kod: "T.6.3.8", tanim: "İsim ve sıfat tamlamalarının metnin anlamına katkısını açıklar." },
+      { seviye: 5, alan: "Okuma", kod: "T.5.3.12", tanim: "Görsellerden ve başlıktan hareketle okuyacağı metnin konusunu tahmin eder." }
+    ];
+
+    let state = {
+      classes: JSON.parse(localStorage.getItem('turkce_c')) || [
+        {id: "c1", ad: "8/A", seviye: 8, sube: "A"}, {id: "c2", ad: "8/B", seviye: 8, sube: "B"}, {id: "c3", ad: "7/A", seviye: 7, sube: "A"}
+      ],
+      students: JSON.parse(localStorage.getItem('turkce_s')) || [
+        {id: "s1", sinif_id: "c1", okul_no: 101, ad: "Ahmet", soyad: "YILMAZ", cinsiyet: "Erkek", bep_durumu: false, ozel_not: "Okuma hızı yüksek"},
+        {id: "s2", sinif_id: "c1", okul_no: 102, ad: "Ayşe", soyad: "DEMİR", cinsiyet: "Kız", bep_durumu: false, ozel_not: "Kompozisyon başarılı"},
+        {id: "s3", sinif_id: "c1", okul_no: 103, ad: "Mehmet", soyad: "KAYA", cinsiyet: "Erkek", bep_durumu: true, ozel_not: "BEP Öğrencisi"}
+      ],
+      hw: {}
+    };
+
+    function init() {
+      renderSelects();
+      renderStudents();
+      renderRubric();
+      renderHomework();
+      renderOutcomes();
+      renderQuestions();
+      updateStats();
+    }
+
+    function nav(id) {
+      ['dashboard', 'students', 'rubrics', 'homework', 'outcomes', 'questions', 'planner'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).classList.remove('active-tab');
+      });
+      document.getElementById(`tab-${id}`).classList.remove('hidden');
+      document.getElementById(`nav-${id}`).classList.add('active-tab');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+    function updateStats() {
+      document.getElementById('statClasses').textContent = state.classes.length;
+      document.getElementById('statStudents').textContent = state.students.length;
+      document.getElementById('statBEP').textContent = `${state.students.filter(s=>s.bep_durumu).length} BEP Öğrencisi`;
+    }
+
+    function renderSelects() {
+      const selects = [document.getElementById('studentClassFilter'), document.getElementById('mStuClass'), document.getElementById('rubricClass'), document.getElementById('hwClassFilter')];
+      selects.forEach(s => {
+        if (!s) return;
+        const isFilter = s.id.includes('Filter');
+        s.innerHTML = isFilter ? '<option value="">Tüm Sınıflar</option>' : '';
+        state.classes.forEach(c => s.innerHTML += `<option value="${c.id}">${c.ad || c.seviye+'/'+c.sube}</option>`);
+      });
+      updateRubricStudents();
+    }
+
+    function renderStudents() {
+      const f = document.getElementById('studentClassFilter').value;
+      const list = f ? state.students.filter(s => s.sinif_id === f) : state.students;
+      const tb = document.getElementById('studentTable');
+      if (list.length === 0) { tb.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">Öğrenci bulunamadı.</td></tr>`; return; }
+      tb.innerHTML = list.map(s => {
+        const c = state.classes.find(cls => cls.id === s.sinif_id);
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 font-bold font-mono">${s.okul_no}</td>
+            <td class="py-3 px-4 font-semibold text-slate-900">${s.ad} ${s.soyad}</td>
+            <td class="py-3 px-4"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[11px] font-bold">${c ? c.ad : '-'}</span></td>
+            <td class="py-3 px-4">${s.cinsiyet}</td>
+            <td class="py-3 px-4">${s.bep_durumu ? '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px]">BEP</span>' : '-'}</td>
+            <td class="py-3 px-4 text-slate-500">${s.ozel_not || '-'}</td>
+            <td class="py-3 px-4 text-right"><button onclick="delStudent('${s.id}')" class="text-red-500 hover:text-red-700 font-bold">Sil</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function saveClass() {
+      const lev = document.getElementById('mClsLevel').value;
+      const sub = document.getElementById('mClsSub').value.trim().toUpperCase();
+      if (!sub) return alert("Şube harfini giriniz.");
+      state.classes.push({ id: "c_" + Date.now(), seviye: lev, sube: sub, ad: `${lev}/${sub}` });
+      localStorage.setItem('turkce_c', JSON.stringify(state.classes));
+      closeModal('classModal');
+      renderSelects();
+      renderStudents();
+      updateStats();
+    }
+
+    function saveStudent() {
+      const cid = document.getElementById('mStuClass').value;
+      const no = document.getElementById('mStuNo').value;
+      const name = document.getElementById('mStuName').value.trim();
+      const sur = document.getElementById('mStuSurname').value.trim().toUpperCase();
+      if (!cid || !no || !name || !sur) return alert("Bilgileri eksiksiz doldurun.");
+      state.students.push({
+        id: "s_" + Date.now(), sinif_id: cid, okul_no: parseInt(no), ad: name, soyad: sur,
+        cinsiyet: document.getElementById('mStuGender').value,
+        bep_durumu: document.getElementById('mStuBEP').checked,
+        ozel_not: document.getElementById('mStuNote').value
+      });
+      localStorage.setItem('turkce_s', JSON.stringify(state.students));
+      closeModal('studentModal');
+      renderStudents();
+      updateStats();
+    }
+
+    function delStudent(id) {
+      if (!confirm("Silinsin mi?")) return;
+      state.students = state.students.filter(s => s.id !== id);
+      localStorage.setItem('turkce_s', JSON.stringify(state.students));
+      renderStudents();
+      updateStats();
+    }
+
+    function exportCSV() {
+      let csv = "\uFEFFOkul No,Adı,Soyadı,Sınıf,BEP\n";
+      state.students.forEach(s => {
+        const c = state.classes.find(cls => cls.id === s.sinif_id);
+        csv += `${s.okul_no},"${s.ad}","${s.soyad}","${c?c.ad:''}","${s.bep_durumu?'BEP':''}"\n`;
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      a.download = "Ogrenciler.csv";
+      a.click();
+    }
+
+    function updateRubricStudents() {
+      const cid = document.getElementById('rubricClass').value;
+      const sel = document.getElementById('rubricStudent');
+      sel.innerHTML = '';
+      state.students.filter(s => s.sinif_id === cid).forEach(s => {
+        sel.innerHTML += `<option value="${s.id}">No ${s.okul_no}: ${s.ad} ${s.soyad}</option>`;
+      });
+      renderRubric();
+    }
+
+    function renderRubric() {
+      const type = document.getElementById('rubricType').value;
+      const rub = RUBRICS[type];
+      const sid = document.getElementById('rubricStudent').value;
+      const stu = state.students.find(s => s.id === sid);
+      document.getElementById('rubricHeader').textContent = rub.title;
+      document.getElementById('rubricStudentName').textContent = stu ? `Öğrenci: No ${stu.okul_no} - ${stu.ad} ${stu.soyad}` : "Öğrenci seçin";
+      
+      const cDiv = document.getElementById('rubricCriteria');
+      cDiv.innerHTML = rub.crits.map((c, i) => `
+        <div class="flex items-center justify-between border-b pb-2">
+          <span class="text-xs font-semibold text-slate-700">${i+1}. ${c.n} (En çok ${c.m}P)</span>
+          <div class="flex items-center gap-2">
+            <input type="range" min="0" max="${c.m}" value="${c.m*0.8}" oninput="calcRubric()" class="w-32 r-slider">
+            <span class="text-xs font-bold text-blue-600 w-6 text-right r-val">${c.m*0.8}</span>
+          </div>
+        </div>
+      `).join('');
+      calcRubric();
+    }
+
+    function calcRubric() {
+      let t = 0;
+      document.querySelectorAll('.r-slider').forEach(s => {
+        s.nextElementSibling.textContent = s.value;
+        t += parseInt(s.value);
+      });
+      document.getElementById('rubricTotal').textContent = `${t} / 100`;
+    }
+
+    function saveRubric() {
+      const sid = document.getElementById('rubricStudent').value;
+      const stu = state.students.find(s => s.id === sid);
+      if (!stu) return alert("Öğrenci seçin.");
+      alert(`✅ ${stu.ad} ${stu.soyad} için not (${document.getElementById('rubricTotal').textContent}) kaydedildi!`);
+    }
+
+    function printRubric() {
+      const type = document.getElementById('rubricType').value;
+      const rub = RUBRICS[type];
+      const sid = document.getElementById('rubricStudent').value;
+      const stu = state.students.find(s => s.id === sid) || {ad: "................", soyad: "", okul_no: "..."};
+      const score = document.getElementById('rubricTotal').textContent;
+      const note = document.getElementById('rubricNote').value;
+
+      document.getElementById('printArea').innerHTML = `
+        <div style="text-align:center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 20px;">
+          <h2>T.C. MİLLÎ EĞİTİM BAKANLIĞI</h2>
+          <h3>TÜRKÇE DERSİ SINAV DEĞERLENDİRME ÖLÇEĞİ</h3>
+          <p>2026-2027 Eğitim-Öğretim Yılı</p>
+        </div>
+        <p><b>Öğrenci:</b> ${stu.ad} ${stu.soyad} &nbsp;&nbsp;&nbsp; <b>No:</b> ${stu.okul_no} &nbsp;&nbsp;&nbsp; <b>Tarih:</b> ${new Date().toLocaleDateString('tr-TR')}</p>
+        <p><b>Ölçek:</b> ${rub.title}</p>
+        <table border="1" style="width:100%; border-collapse:collapse; margin:20px 0;" cellpadding="8">
+          <thead><tr style="background:#eee;"><th>No</th><th>Kriter</th><th>Maks</th><th>Puan</th></tr></thead>
+          <tbody>
+            ${rub.crits.map((c, i) => `<tr><td align="center">${i+1}</td><td>${c.n}</td><td align="center">${c.m}</td><td align="center">...</td></tr>`).join('')}
+          </tbody>
+        </table>
+        <div style="display:flex; justify-content:space-between; margin-top:20px;">
+          <div><b>Gözlem:</b> ${note || "...................................................."}</div>
+          <div><h3>TOPLAM PUAN: ${score}</h3></div>
+        </div>
+        <div style="margin-top:60px; text-align:right;"><b>Türkçe Öğretmeni İmza:</b> .......................</div>
+      `;
+      window.print();
+    }
+
+    function renderHomework() {
+      const cid = document.getElementById('hwClassFilter').value;
+      const list = cid ? state.students.filter(s => s.sinif_id === cid) : state.students;
+      const tb = document.getElementById('hwTable');
+      if (list.length === 0) { tb.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">Öğrenci bulunamadı.</td></tr>`; return; }
+      tb.innerHTML = list.map(s => {
+        const st = state.hw[s.id] || "yapildi";
+        const b = {
+          yapildi: '<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">Yapıldı ✓</span>',
+          eksik: '<span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded font-bold">Eksik !</span>',
+          yapilmadi: '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">Yapılmadı ✕</span>'
+        };
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 font-bold font-mono">${s.okul_no}</td>
+            <td class="py-3 px-4 font-semibold text-slate-900">${s.ad} ${s.soyad}</td>
+            <td class="py-3 px-4">Nutuk / Hikâyeler</td>
+            <td class="py-3 px-4 font-mono">40 Sayfa</td>
+            <td class="py-3 px-4">${b[st]}</td>
+            <td class="py-3 px-4 text-right space-x-1">
+              <button onclick="setHw('${s.id}','yapildi')" class="px-2 py-1 bg-emerald-100 text-emerald-800 font-bold rounded">✓</button>
+              <button onclick="setHw('${s.id}','eksik')" class="px-2 py-1 bg-yellow-100 text-yellow-800 font-bold rounded">!</button>
+              <button onclick="setHw('${s.id}','yapilmadi')" class="px-2 py-1 bg-red-100 text-red-800 font-bold rounded">✕</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function setHw(id, st) { state.hw[id] = st; renderHomework(); }
+
+    function renderOutcomes() {
+      const g = document.getElementById('outGrade').value;
+      const a = document.getElementById('outArea').value;
+      const q = document.getElementById('outSearch').value.toLowerCase();
+      let list = OUTCOMES;
+      if (g) list = list.filter(o => String(o.seviye) === g);
+      if (a) list = list.filter(o => o.alan === a);
+      if (q) list = list.filter(o => o.tanim.toLowerCase().includes(q) || o.kod.toLowerCase().includes(q));
+      document.getElementById('outList').innerHTML = list.map(o => `
+        <div class="p-3 bg-white border rounded-xl flex items-start gap-3 hover:border-blue-400 transition">
+          <span class="bg-blue-100 text-blue-800 font-mono font-bold px-2 py-1 rounded text-xs">${o.kod}</span>
+          <div>
+            <span class="text-[10px] font-bold uppercase text-slate-400">${o.seviye}. Sınıf • ${o.alan}</span>
+            <p class="text-xs text-slate-800 mt-0.5">${o.tanim}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderQuestions() {
+      const q = [
+        { s: 8, t: "Açık Uçlu", q: "Yazarın metinde vurguladığı ana düşünceyi kendi ifadelerinizle açıklayınız.", a: "Metnin ana fikri doğru gerekçeyle açıklanmalıdır (25P)" },
+        { s: 8, t: "LGS Paragraf", q: "'Ağaç yaşken eğilir.' atasözünün verdiği asıl mesaj nedir?", a: "Eğitimin küçük yaşta başlamasının önemi" }
+      ];
+      document.getElementById('qList').innerHTML = q.map((item, i) => `
+        <div class="p-4 border rounded-2xl bg-white space-y-2">
+          <span class="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">${item.s}. Sınıf • ${item.t}</span>
+          <p class="text-xs font-semibold text-slate-800">${item.q}</p>
+          <div class="text-[11px] bg-slate-50 p-2 rounded border"><b>Cevap:</b> ${item.a}</div>
+        </div>
+      `).join('');
+    }
+
+    function genQuestions() {
+      const t = document.getElementById('aiText').value.trim();
+      if (!t) return alert("Metin girin.");
+      const d = document.getElementById('aiOut');
+      d.classList.remove('hidden');
+      d.innerHTML = `
+        <b class="text-blue-900 block mb-2 font-bold">MEB Açık Uçlu Soru Taslağı:</b>
+        <p><b>1. Soru (Ana Fikir - 25P):</b> Metinde verilmek istenen temel mesajı bir cümleyle yazınız.</p>
+        <p><b>2. Soru (Söz Varlığı - 25P):</b> Metindeki altı çizili ifadenin kattığı mecaz anlamı açıklayınız.</p>
+        <p><b>3. Soru (Neden-Sonuç - 25P):</b> Kahramanın kararının sonucunu olay örgüsüne göre belirtiniz.</p>
+        <p><b>4. Soru (Öznel Düşünme - 25P):</b> Siz kahramanın yerinde olsaydınız nasıl davranırdınız?</p>
+      `;
+    }
+
+    function genListening() {
+      const d = document.getElementById('aiOut');
+      d.classList.remove('hidden');
+      d.innerHTML = `
+        <b class="text-emerald-900 block mb-2 font-bold">3 Aşamalı Dinleme Planı:</b>
+        <p><b>1. Dinleme Öncesi (5 Dk):</b> Başlıktan konu tahmini ve 3 anahtar kelimenin tahtaya yazılması.</p>
+        <p><b>2. Dinleme Sırası (15 Dk):</b> 1. dinleme genel kavrayış, 2. dinleme 5N1K not alma.</p>
+        <p><b>3. Dinleme Sonrası (20 Dk):</b> Açık uçlu sorular + 2 dakikalık hazırlıksız konuşma.</p>
+      `;
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
